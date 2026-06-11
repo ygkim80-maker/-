@@ -1,1 +1,3 @@
 .claude/
+node_modules/
+fulfillment-platform/packages/backend/prisma/dev.db
