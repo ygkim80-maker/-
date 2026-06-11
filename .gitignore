@@ -1,3 +1,7 @@
 .claude/
-node_modules/
+fulfillment-platform/node_modules/
+fulfillment-platform/packages/backend/node_modules/
+fulfillment-platform/packages/frontend/node_modules/
 fulfillment-platform/packages/backend/prisma/dev.db
+fulfillment-platform/packages/backend/dist/
+fulfillment-platform/packages/frontend/dist/
