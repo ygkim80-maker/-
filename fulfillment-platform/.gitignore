@@ -1,0 +1,7 @@
+node_modules/
+packages/backend/node_modules/
+packages/frontend/node_modules/
+packages/backend/prisma/dev.db
+packages/backend/dist/
+packages/frontend/dist/
+packages/backend/.env

@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev --workspace=packages/backend\" \"npm run dev --workspace=packages/frontend\"",
     "setup": "npm install && npm run db:setup",
-    "db:setup": "npm run --workspace=packages/backend prisma:setup"
+    "db:setup": "npm run --workspace=packages/backend prisma:setup",
+    "build": "npm run build --workspace=packages/frontend && npm run build --workspace=packages/backend",
+    "start:prod": "npx prisma generate --schema=packages/backend/prisma/schema.prisma && npx prisma migrate deploy --schema=packages/backend/prisma/schema.prisma && node packages/backend/dist/index.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
