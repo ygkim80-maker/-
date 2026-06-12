@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import http from 'http';
+import path from 'path';
 import { Server } from 'socket.io';
 
 import { auth } from './middleware/auth';
@@ -52,6 +53,13 @@ app.use('/api/yms/dock', auth, dockRoutes);
 app.use('/api/lms/labor', auth, laborRoutes);
 app.use('/api/shipper/portal', auth, portalRoutes);
 app.use('/api/ai/chat', auth, chatRoutes);
+
+// Serve frontend static files in production
+const frontendDist = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDist));
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(frontendDist, 'index.html'));
+});
 
 app.use(notFound);
 app.use(errorHandler);
