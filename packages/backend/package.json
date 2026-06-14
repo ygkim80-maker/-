@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc --skipLibCheck",
+    "build": "cd ../frontend && npm run build && cd ../backend && tsc --skipLibCheck",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
