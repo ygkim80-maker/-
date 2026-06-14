@@ -6,8 +6,8 @@ cmds = ["npm install --legacy-peer-deps"]
 
 [phases.build]
 cmds = [
-  "cd packages/frontend && npm run build && cd ../..",
-  "cd packages/backend && npx tsc --skipLibCheck && cd ../..",
+  "npm run build --workspace=packages/frontend",
+  "npm run build --workspace=packages/backend",
   "npx prisma generate --schema=packages/backend/prisma/schema.prisma"
 ]
 
