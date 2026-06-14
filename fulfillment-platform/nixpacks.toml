@@ -1,0 +1,15 @@
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = [
+  "npm run build --workspace=packages/frontend",
+  "cd packages/backend && npx tsc && cd ../..",
+  "npx prisma generate --schema=packages/backend/prisma/schema.prisma"
+]
+
+[start]
+cmd = "npx prisma migrate deploy --schema=packages/backend/prisma/schema.prisma && npx tsx packages/backend/prisma/seed.ts; node packages/backend/dist/index.js"
