@@ -2,12 +2,12 @@
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["npm install"]
+cmds = ["npm install --legacy-peer-deps"]
 
 [phases.build]
 cmds = [
-  "npm run build --workspace=packages/frontend",
-  "cd packages/backend && npx tsc && cd ../..",
+  "cd packages/frontend && npm run build && cd ../..",
+  "cd packages/backend && npx tsc --skipLibCheck && cd ../..",
   "npx prisma generate --schema=packages/backend/prisma/schema.prisma"
 ]
 

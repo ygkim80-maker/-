@@ -55,7 +55,7 @@ app.use('/api/shipper/portal', auth, portalRoutes);
 app.use('/api/ai/chat', auth, chatRoutes);
 
 // Serve frontend static files in production
-const frontendDist = path.join(__dirname, '../../../packages/frontend/dist');
+const frontendDist = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendDist));
 
 // All non-API routes → frontend
