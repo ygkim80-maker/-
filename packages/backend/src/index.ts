@@ -25,6 +25,7 @@ import dockRoutes from './routes/yms/dock';
 import laborRoutes from './routes/lms/labor';
 import portalRoutes from './routes/shipper/portal';
 import chatRoutes from './routes/ai/chat';
+import monitoringRoutes from './routes/monitoring/monitoring';
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use('/api/yms/dock', auth, dockRoutes);
 app.use('/api/lms/labor', auth, laborRoutes);
 app.use('/api/shipper/portal', auth, portalRoutes);
 app.use('/api/ai/chat', auth, chatRoutes);
+app.use('/api/monitoring', auth, monitoringRoutes);
 
 // Serve frontend static files in production
 const frontendDist = path.join(__dirname, '../../frontend/dist');

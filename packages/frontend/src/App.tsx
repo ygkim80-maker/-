@@ -25,6 +25,8 @@ import Productivity from './pages/lms/Productivity';
 import ShipperPortal from './pages/shipper/ShipperPortal';
 import AIAssistant from './pages/ai/AIAssistant';
 import Reports from './pages/reports/Reports';
+import CctvMonitoring from './pages/monitoring/CctvMonitoring';
+import SensorMonitoring from './pages/monitoring/SensorMonitoring';
 
 function Protected({ children }: { children: JSX.Element }) {
   const token = useAuth((s) => s.token);
@@ -81,6 +83,8 @@ export default function App() {
         <Route path="/lms/workers" element={<Workers />} />
         <Route path="/lms/tasks" element={<Tasks />} />
         <Route path="/lms/productivity" element={<Productivity />} />
+        <Route path="/monitoring/cctv" element={<CctvMonitoring />} />
+        <Route path="/monitoring/sensor" element={<SensorMonitoring />} />
         <Route path="/shipper" element={<ShipperPortal />} />
         <Route path="/ai" element={<AIAssistant />} />
         <Route path="/reports" element={<Reports />} />

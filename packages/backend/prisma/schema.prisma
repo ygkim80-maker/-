@@ -323,3 +323,50 @@ model Alert {
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+model SensorDevice {
+  id          String      @id @default(cuid())
+  name        String
+  zoneCode    String
+  location    String
+  type        String      @default("TEMP_HUMIDITY")
+  isActive    Boolean     @default(true)
+  minTemp     Float       @default(0)
+  maxTemp     Float       @default(40)
+  minHumidity Float       @default(20)
+  maxHumidity Float       @default(80)
+  createdAt   DateTime    @default(now())
+  logs        SensorLog[]
+}
+
+model SensorLog {
+  id          String       @id @default(cuid())
+  deviceId    String
+  device      SensorDevice @relation(fields: [deviceId], references: [id])
+  temperature Float
+  humidity    Float
+  recordedAt  DateTime     @default(now())
+}
+
+model CctvCamera {
+  id         String   @id @default(cuid())
+  name       String
+  location   String
+  zoneCode   String
+  streamUrl  String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  alerts     CctvAlert[]
+}
+
+model CctvAlert {
+  id         String     @id @default(cuid())
+  cameraId   String
+  camera     CctvCamera @relation(fields: [cameraId], references: [id])
+  alertType  String
+  severity   String
+  message    String
+  isResolved Boolean    @default(false)
+  detectedAt DateTime   @default(now())
+  resolvedAt DateTime?
+}

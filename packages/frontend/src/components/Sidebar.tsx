@@ -52,6 +52,13 @@ const sections: NavSection[] = [
     ],
   },
   {
+    title: '현장 모니터링',
+    items: [
+      { to: '/monitoring/cctv', label: 'CCTV 모니터링', icon: '📹' },
+      { to: '/monitoring/sensor', label: '온습도 모니터링', icon: '🌡️' },
+    ],
+  },
+  {
     title: '기타',
     items: [
       { to: '/shipper', label: '화주포털', icon: '🏢' },
