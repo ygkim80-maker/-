@@ -1,57 +1,74 @@
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import AIChat from './AIChat';
+import { useState, useEffect } from 'react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/auth';
+import { api } from '../hooks/api';
 
 export default function Layout() {
-  const { user, logout } = useAuth();
-  const [showMenu, setShowMenu] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    api.get('/notifications/unread-count').then(res => setUnreadCount(res.data.count)).catch(() => {});
+  }, []);
+
+  const isCompany = user?.role === 'COMPANY';
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span className="font-semibold text-gray-800">수도권 풀필먼트 센터</span>
-            <span className="text-gray-400">· 경기도 이천</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="relative text-gray-500 hover:text-gray-700 text-lg" title="알림">
-              🔔
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-brand rounded-full" />
-            </button>
-            <div className="relative">
-              <button
-                onClick={() => setShowMenu((s) => !s)}
-                className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-100 px-2 py-1 rounded-md"
-              >
-                <span className="w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-xs">
-                  {user?.name?.[0] || 'U'}
-                </span>
-                <span>{user?.name || '사용자'}</span>
-                <span className="text-xs text-gray-400">({user?.role})</span>
-              </button>
-              {showMenu && (
-                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-50">
-                  <div className="px-3 py-2 text-xs text-gray-500 border-b">{user?.email}</div>
-                  <button
-                    onClick={logout}
-                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    로그아웃
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-100">
-          <Outlet />
-        </main>
-      </div>
-      <AIChat />
+    <div className="flex flex-col min-h-screen">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-100 px-4 h-14 flex items-center justify-between">
+        <h1
+          className="text-lg font-bold text-blue-500 cursor-pointer"
+          onClick={() => navigate('/')}
+        >
+          카드배송 잡스
+        </h1>
+        <button
+          onClick={() => navigate('/notifications')}
+          className="relative p-2"
+        >
+          <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          {unreadCount > 0 && (
+            <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </button>
+      </header>
+
+      {/* Content */}
+      <main className="flex-1 overflow-y-auto pb-20 bg-gray-50">
+        <Outlet />
+      </main>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t border-gray-200 z-50">
+        <div className="flex items-center justify-around h-16">
+          <NavLink to="/" end className={({ isActive }) => `flex flex-col items-center gap-1 py-1 px-3 ${isActive ? 'text-blue-500' : 'text-gray-400'}`}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z" /></svg>
+            <span className="text-[11px] font-medium">홈</span>
+          </NavLink>
+
+          <NavLink to="/applications" className={({ isActive }) => `flex flex-col items-center gap-1 py-1 px-3 ${isActive ? 'text-blue-500' : 'text-gray-400'}`}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+            <span className="text-[11px] font-medium">{isCompany ? '지원현황' : '내지원'}</span>
+          </NavLink>
+
+          <NavLink to="/notifications" className={({ isActive }) => `relative flex flex-col items-center gap-1 py-1 px-3 ${isActive ? 'text-blue-500' : 'text-gray-400'}`}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+            {unreadCount > 0 && <span className="absolute -top-0.5 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{unreadCount}</span>}
+            <span className="text-[11px] font-medium">알림</span>
+          </NavLink>
+
+          <NavLink to="/profile" className={({ isActive }) => `flex flex-col items-center gap-1 py-1 px-3 ${isActive ? 'text-blue-500' : 'text-gray-400'}`}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            <span className="text-[11px] font-medium">내정보</span>
+          </NavLink>
+        </div>
+      </nav>
     </div>
   );
 }

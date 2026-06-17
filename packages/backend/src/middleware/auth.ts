@@ -2,12 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 export const JWT_SECRET =
-  process.env.JWT_SECRET || 'fulfillment-center-secret-key-change-me';
+  process.env.JWT_SECRET || 'card-delivery-secret-key-change-me';
 
 export interface AuthUser {
   id: string;
   role: string;
-  shipperId: string | null;
   email: string;
   name: string;
 }
@@ -28,7 +27,6 @@ export function auth(req: AuthRequest, res: Response, next: NextFunction): void 
     req.user = {
       id: decoded.id,
       role: decoded.role,
-      shipperId: decoded.shipperId ?? null,
       email: decoded.email,
       name: decoded.name,
     };

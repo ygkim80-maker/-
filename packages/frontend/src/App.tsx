@@ -4,29 +4,14 @@ import { useAuth } from './store/auth';
 import { api } from './hooks/api';
 import Layout from './components/Layout';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Inbound from './pages/wms/Inbound';
-import Receiving from './pages/wms/Receiving';
-import Inventory from './pages/wms/Inventory';
-import Locations from './pages/wms/Locations';
-import Items from './pages/wms/Items';
-import CycleCount from './pages/wms/CycleCount';
-import Outbound from './pages/wms/Outbound';
-import Picking from './pages/wms/Picking';
-import Orders from './pages/oms/Orders';
-import OrderDetail from './pages/oms/OrderDetail';
-import Channels from './pages/oms/Channels';
-import Shipments from './pages/tms/Shipments';
-import Carriers from './pages/tms/Carriers';
-import DockSchedule from './pages/yms/DockSchedule';
-import Workers from './pages/lms/Workers';
-import Tasks from './pages/lms/Tasks';
-import Productivity from './pages/lms/Productivity';
-import ShipperPortal from './pages/shipper/ShipperPortal';
-import AIAssistant from './pages/ai/AIAssistant';
-import Reports from './pages/reports/Reports';
-import CctvMonitoring from './pages/monitoring/CctvMonitoring';
-import SensorMonitoring from './pages/monitoring/SensorMonitoring';
+import Register from './pages/Register';
+import Home from './pages/Home';
+import JobDetail from './pages/JobDetail';
+import JobForm from './pages/JobForm';
+import Applications from './pages/Applications';
+import Notifications from './pages/Notifications';
+import Profile from './pages/Profile';
+import ProfileEdit from './pages/ProfileEdit';
 
 function Protected({ children }: { children: JSX.Element }) {
   const token = useAuth((s) => s.token);
@@ -52,12 +37,17 @@ export default function App() {
   }, []);
 
   if (!ready) {
-    return <div className="h-screen flex items-center justify-center text-gray-400">로딩 중...</div>;
+    return (
+      <div className="h-screen flex items-center justify-center text-gray-400">
+        로딩 중...
+      </div>
+    );
   }
 
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route
         element={
           <Protected>
@@ -65,29 +55,13 @@ export default function App() {
           </Protected>
         }
       >
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/wms/inbound" element={<Inbound />} />
-        <Route path="/wms/receiving" element={<Receiving />} />
-        <Route path="/wms/inventory" element={<Inventory />} />
-        <Route path="/wms/locations" element={<Locations />} />
-        <Route path="/wms/items" element={<Items />} />
-        <Route path="/wms/cycle-count" element={<CycleCount />} />
-        <Route path="/wms/outbound" element={<Outbound />} />
-        <Route path="/wms/picking" element={<Picking />} />
-        <Route path="/oms/orders" element={<Orders />} />
-        <Route path="/oms/orders/:id" element={<OrderDetail />} />
-        <Route path="/oms/channels" element={<Channels />} />
-        <Route path="/tms/shipments" element={<Shipments />} />
-        <Route path="/tms/carriers" element={<Carriers />} />
-        <Route path="/yms/dock" element={<DockSchedule />} />
-        <Route path="/lms/workers" element={<Workers />} />
-        <Route path="/lms/tasks" element={<Tasks />} />
-        <Route path="/lms/productivity" element={<Productivity />} />
-        <Route path="/monitoring/cctv" element={<CctvMonitoring />} />
-        <Route path="/monitoring/sensor" element={<SensorMonitoring />} />
-        <Route path="/shipper" element={<ShipperPortal />} />
-        <Route path="/ai" element={<AIAssistant />} />
-        <Route path="/reports" element={<Reports />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/jobs/:id" element={<JobDetail />} />
+        <Route path="/jobs/new" element={<JobForm />} />
+        <Route path="/applications" element={<Applications />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/edit" element={<ProfileEdit />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

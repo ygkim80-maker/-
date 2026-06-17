@@ -4,10 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        sidebar: '#1a1a2e',
-        sidebarHover: '#16213e',
-        accent: '#0f3460',
-        brand: '#e94560',
+        primary: '#3B82F6',
+        urgent: '#F97316',
+        success: '#10B981',
       },
     },
   },
