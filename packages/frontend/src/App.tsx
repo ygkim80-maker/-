@@ -27,6 +27,7 @@ import AIAssistant from './pages/ai/AIAssistant';
 import Reports from './pages/reports/Reports';
 import CctvMonitoring from './pages/monitoring/CctvMonitoring';
 import SensorMonitoring from './pages/monitoring/SensorMonitoring';
+import StockDashboard from './pages/stock/StockDashboard';
 
 function Protected({ children }: { children: JSX.Element }) {
   const token = useAuth((s) => s.token);
@@ -88,6 +89,7 @@ export default function App() {
         <Route path="/shipper" element={<ShipperPortal />} />
         <Route path="/ai" element={<AIAssistant />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/stock" element={<StockDashboard />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

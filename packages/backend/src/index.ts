@@ -27,6 +27,7 @@ import laborRoutes from './routes/lms/labor';
 import portalRoutes from './routes/shipper/portal';
 import chatRoutes from './routes/ai/chat';
 import monitoringRoutes from './routes/monitoring/monitoring';
+import stockRoutes from './routes/stock/stock';
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use('/api/lms/labor', auth, laborRoutes);
 app.use('/api/shipper/portal', auth, portalRoutes);
 app.use('/api/ai/chat', auth, chatRoutes);
 app.use('/api/monitoring', auth, monitoringRoutes);
+app.use('/api/stock', auth, stockRoutes);
 
 // Serve frontend static files in production
 const frontendDist = path.join(__dirname, '../../frontend/dist');

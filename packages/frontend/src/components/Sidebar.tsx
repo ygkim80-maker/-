@@ -59,6 +59,12 @@ const sections: NavSection[] = [
     ],
   },
   {
+    title: '주식 시세',
+    items: [
+      { to: '/stock', label: '시세 대시보드', icon: '💹' },
+    ],
+  },
+  {
     title: '기타',
     items: [
       { to: '/shipper', label: '화주포털', icon: '🏢' },
