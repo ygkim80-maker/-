@@ -10,6 +10,9 @@ export function initSocket(server: Server): void {
   setIo(server);
   server.on('connection', (socket) => {
     console.log(`[socket] client connected: ${socket.id}`);
+    socket.on('qa:join', (sessionId: string) => {
+      socket.join(`qa:${sessionId}`);
+    });
     socket.on('disconnect', () => {
       console.log(`[socket] client disconnected: ${socket.id}`);
     });

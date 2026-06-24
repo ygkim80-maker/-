@@ -27,6 +27,8 @@ import AIAssistant from './pages/ai/AIAssistant';
 import Reports from './pages/reports/Reports';
 import CctvMonitoring from './pages/monitoring/CctvMonitoring';
 import SensorMonitoring from './pages/monitoring/SensorMonitoring';
+import AudiencePage from './pages/qa/AudiencePage';
+import PresenterPage from './pages/qa/PresenterPage';
 
 function Protected({ children }: { children: JSX.Element }) {
   const token = useAuth((s) => s.token);
@@ -58,6 +60,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/qa/:sessionId" element={<AudiencePage />} />
       <Route
         element={
           <Protected>
@@ -88,6 +91,7 @@ export default function App() {
         <Route path="/shipper" element={<ShipperPortal />} />
         <Route path="/ai" element={<AIAssistant />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/qa" element={<PresenterPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

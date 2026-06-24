@@ -27,6 +27,7 @@ import laborRoutes from './routes/lms/labor';
 import portalRoutes from './routes/shipper/portal';
 import chatRoutes from './routes/ai/chat';
 import monitoringRoutes from './routes/monitoring/monitoring';
+import qaRoutes from './routes/qa/session';
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 app.use('/api/auth', authRoutes);
+app.use('/api/qa', qaRoutes);
 
 // Protected
 app.use('/api/dashboard', auth, dashboardRoutes);

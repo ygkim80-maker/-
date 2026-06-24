@@ -64,6 +64,7 @@ const sections: NavSection[] = [
       { to: '/shipper', label: '화주포털', icon: '🏢' },
       { to: '/ai', label: 'AI 어시스턴트', icon: '🤖' },
       { to: '/reports', label: '리포트', icon: '📑' },
+      { to: '/qa', label: '실시간 Q&A', icon: '🎤' },
     ],
   },
 ];
