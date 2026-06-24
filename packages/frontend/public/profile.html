@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>김영국 — Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #533afd;
+      --primary-deep: #4434d4;
+      --primary-press: #2e2b8c;
+      --primary-soft: #665efd;
+      --primary-bg-subdued: #b9b9f9;
+      --brand-dark: #1c1e54;
+      --ink: #0d253d;
+      --ink-secondary: #273951;
+      --ink-mute: #64748d;
+      --canvas: #ffffff;
+      --canvas-soft: #f6f9fc;
+      --canvas-cream: #f5e9d4;
+      --hairline: #e3e8ee;
+      --ruby: #ea2261;
+      --magenta: #f96bee;
+      --lemon: #9b6829;
+      --shadow-blue: #003770;
+    }
+
+    html {
+      font-feature-settings: "ss01";
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+      font-weight: 300;
+      color: var(--ink);
+      background: var(--canvas);
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Gradient Mesh Hero ── */
+    .hero {
+      position: relative;
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 20%, var(--canvas-cream) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 50% at 30% 30%, #f5a623 0%, transparent 45%),
+        radial-gradient(ellipse 50% 60% at 50% 25%, #c4b5fd 0%, transparent 50%),
+        radial-gradient(ellipse 70% 50% at 70% 15%, var(--primary) 0%, transparent 45%),
+        radial-gradient(ellipse 50% 40% at 85% 30%, var(--ruby) 0%, transparent 40%),
+        radial-gradient(ellipse 40% 30% at 95% 20%, var(--magenta) 0%, transparent 35%);
+      opacity: 0.35;
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 720px;
+      padding: 0 24px;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      background: var(--primary-bg-subdued);
+      color: var(--primary-deep);
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.1px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: 56px;
+      font-weight: 300;
+      line-height: 1.03;
+      letter-spacing: -1.4px;
+      margin-bottom: 24px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      font-weight: 300;
+      line-height: 1.6;
+      color: var(--ink-secondary);
+      margin-bottom: 40px;
+      letter-spacing: 0;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 400;
+      letter-spacing: 0;
+      padding: 12px 28px;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--primary-deep); }
+    .btn-primary:active { background: var(--primary-press); }
+
+    .btn-secondary {
+      display: inline-block;
+      background: var(--canvas);
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 400;
+      padding: 12px 28px;
+      border-radius: 9999px;
+      border: 1px solid var(--primary);
+      cursor: pointer;
+      text-decoration: none;
+      margin-left: 12px;
+      transition: background 0.15s;
+    }
+    .btn-secondary:hover { background: var(--canvas-soft); }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    nav .logo {
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: -0.4px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    nav .nav-links a {
+      color: var(--ink-mute);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 300;
+      margin-left: 32px;
+      transition: color 0.15s;
+    }
+    nav .nav-links a:hover { color: var(--primary); }
+
+    /* ── Sections ── */
+    .section {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 96px 24px;
+    }
+
+    .section-tag {
+      display: inline-block;
+      background: var(--primary-bg-subdued);
+      color: var(--primary-deep);
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      margin-bottom: 16px;
+    }
+
+    .section h2 {
+      font-size: 48px;
+      font-weight: 300;
+      line-height: 1.15;
+      letter-spacing: -0.96px;
+      margin-bottom: 16px;
+    }
+
+    .section .subtitle {
+      font-size: 18px;
+      color: var(--ink-mute);
+      max-width: 600px;
+      margin-bottom: 48px;
+    }
+
+    /* ── About ── */
+    .about-bg { background: var(--canvas-soft); }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    .about-card {
+      background: var(--canvas);
+      padding: 32px;
+      border-radius: 12px;
+      border: 1px solid var(--hairline);
+      box-shadow: rgba(0,55,112,0.08) 0 1px 3px;
+    }
+
+    .about-card h3 {
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: -0.22px;
+      margin-bottom: 16px;
+      line-height: 1.1;
+    }
+
+    .about-card p, .about-card li {
+      font-size: 15px;
+      color: var(--ink-secondary);
+      line-height: 1.6;
+    }
+
+    .about-card ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .about-card ul li {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .about-card ul li:last-child { border-bottom: none; }
+
+    .about-card ul li strong {
+      font-weight: 400;
+      color: var(--ink);
+    }
+
+    /* ── Skills ── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .skill-card {
+      background: var(--canvas);
+      border: 1px solid var(--hairline);
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: rgba(0,55,112,0.08) 0 1px 3px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .skill-card:hover {
+      box-shadow: rgba(0,55,112,0.08) 0 8px 24px, rgba(0,55,112,0.04) 0 2px 6px;
+      transform: translateY(-2px);
+    }
+
+    .skill-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--primary-bg-subdued);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .skill-card h3 {
+      font-size: 20px;
+      font-weight: 300;
+      letter-spacing: -0.2px;
+      margin-bottom: 8px;
+    }
+
+    .skill-card p {
+      font-size: 15px;
+      color: var(--ink-mute);
+      line-height: 1.5;
+    }
+
+    /* ── Experience (dark) ── */
+    .experience-bg {
+      background: var(--brand-dark);
+      color: #fff;
+    }
+
+    .experience-bg h2,
+    .experience-bg .subtitle { color: #fff; }
+    .experience-bg .subtitle { opacity: 0.7; }
+    .experience-bg .section-tag {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 1px;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 40px;
+    }
+    .timeline-item:last-child { margin-bottom: 0; }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -36px;
+      top: 8px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary-soft);
+    }
+
+    .timeline-item .period {
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: -0.39px;
+      color: var(--primary-soft);
+      margin-bottom: 4px;
+      font-feature-settings: "tnum";
+    }
+
+    .timeline-item h3 {
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: -0.22px;
+      margin-bottom: 4px;
+    }
+
+    .timeline-item .company {
+      font-size: 15px;
+      opacity: 0.6;
+      margin-bottom: 8px;
+    }
+
+    .timeline-item p {
+      font-size: 15px;
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+
+    /* ── Contact ── */
+    .contact-bg { background: var(--canvas-cream); }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .contact-info h3 {
+      font-size: 26px;
+      font-weight: 300;
+      letter-spacing: -0.26px;
+      margin-bottom: 24px;
+    }
+
+    .contact-info p {
+      font-size: 15px;
+      color: var(--ink-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .contact-link {
+      display: block;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 15px;
+      padding: 8px 0;
+      transition: opacity 0.15s;
+    }
+    .contact-link:hover { opacity: 0.7; }
+
+    .contact-form {
+      background: var(--canvas);
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: rgba(0,55,112,0.08) 0 8px 24px, rgba(0,55,112,0.04) 0 2px 6px;
+    }
+
+    .contact-form label {
+      display: block;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--ink-mute);
+      letter-spacing: -0.39px;
+      margin-bottom: 6px;
+    }
+
+    .contact-form input,
+    .contact-form textarea {
+      display: block;
+      width: 100%;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 300;
+      color: var(--ink);
+      background: var(--canvas);
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .contact-form input:focus,
+    .contact-form textarea:focus { border-color: var(--primary); }
+
+    .contact-form textarea { height: 120px; resize: vertical; }
+
+    /* ── Footer ── */
+    footer {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 64px 24px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--ink-mute);
+      letter-spacing: -0.39px;
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1023px) {
+      .hero h1 { font-size: 48px; letter-spacing: -0.96px; }
+      .section h2 { font-size: 36px; letter-spacing: -0.72px; }
+      .skills-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 767px) {
+      nav { padding: 12px 20px; }
+      nav .nav-links a { margin-left: 16px; font-size: 14px; }
+      .hero h1 { font-size: 36px; letter-spacing: -0.72px; }
+      .hero p { font-size: 16px; }
+      .section { padding: 64px 20px; }
+      .section h2 { font-size: 28px; letter-spacing: -0.56px; }
+      .about-grid,
+      .contact-grid { grid-template-columns: 1fr; }
+      .skills-grid { grid-template-columns: 1fr; }
+      .btn-secondary { margin-left: 0; margin-top: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a href="#" class="logo">YG Kim</a>
+  <div class="nav-links">
+    <a href="#about">소개</a>
+    <a href="#skills">역량</a>
+    <a href="#experience">경력</a>
+    <a href="#contact">연락</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <span class="hero-tag">Welcome</span>
+    <h1>안녕하세요,<br/>김영국입니다</h1>
+    <p>
+      기술과 비즈니스를 연결하는 소프트웨어 엔지니어입니다.
+      풀필먼트·물류 시스템부터 AI 기반 솔루션까지,
+      복잡한 문제를 깔끔한 코드로 풀어냅니다.
+    </p>
+    <a href="#contact" class="btn-primary">연락하기</a>
+    <a href="#about" class="btn-secondary">더 알아보기</a>
+  </div>
+</section>
+
+<!-- About -->
+<section id="about" class="about-bg">
+  <div class="section">
+    <span class="section-tag">About</span>
+    <h2>저에 대해</h2>
+    <p class="subtitle">기술로 비즈니스 가치를 만드는 것을 좋아합니다.</p>
+    <div class="about-grid">
+      <div class="about-card">
+        <h3>프로필</h3>
+        <ul>
+          <li><strong>이름</strong> — 김영국</li>
+          <li><strong>이메일</strong> — yg.kim80@gmail.com</li>
+          <li><strong>위치</strong> — 대한민국</li>
+          <li><strong>관심 분야</strong> — 풀스택 개발, 물류/SCM, AI/ML</li>
+        </ul>
+      </div>
+      <div class="about-card">
+        <h3>소개</h3>
+        <p>
+          소프트웨어 엔지니어로서 풀필먼트 센터 통합 플랫폼, WMS, OMS, TMS 등
+          물류 IT 시스템을 설계하고 구축하는 일을 하고 있습니다.
+          React, TypeScript, Node.js 기반의 모던 웹 기술과
+          AI를 활용한 업무 자동화에 관심이 많습니다.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Skills -->
+<section id="skills">
+  <div class="section">
+    <span class="section-tag">Skills</span>
+    <h2>핵심 역량</h2>
+    <p class="subtitle">다양한 기술 스택을 활용하여 문제를 해결합니다.</p>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-icon">⚛</div>
+        <h3>프론트엔드</h3>
+        <p>React, TypeScript, Tailwind CSS, Vite를 활용한 모던 UI 개발</p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">⚙</div>
+        <h3>백엔드</h3>
+        <p>Node.js, Express, PostgreSQL, REST API 설계 및 구축</p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">📦</div>
+        <h3>물류 시스템</h3>
+        <p>WMS, OMS, TMS, YMS 등 풀필먼트 통합 플랫폼 개발</p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🤖</div>
+        <h3>AI / 자동화</h3>
+        <p>AI 어시스턴트 통합, 업무 프로세스 자동화, 데이터 분석</p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">☁</div>
+        <h3>인프라</h3>
+        <p>Docker, Railway, CI/CD 파이프라인 구성 및 배포</p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">📊</div>
+        <h3>모니터링</h3>
+        <p>센서 데이터, CCTV, 리얼타임 대시보드 시스템 구축</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Experience -->
+<section id="experience" class="experience-bg">
+  <div class="section">
+    <span class="section-tag">Experience</span>
+    <h2>경력 사항</h2>
+    <p class="subtitle">실무에서 축적한 기술과 경험</p>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="period">현재</div>
+        <h3>풀필먼트 센터 통합 IT 플랫폼</h3>
+        <div class="company">개인 프로젝트</div>
+        <p>
+          WMS, OMS, TMS, YMS, LMS를 통합한 풀필먼트 센터 운영 플랫폼을
+          React + Node.js + PostgreSQL 스택으로 설계·개발.
+          AI 어시스턴트, 센서 모니터링, CCTV 연동 등 포함.
+        </p>
+      </div>
+      <div class="timeline-item">
+        <div class="period">진행 중</div>
+        <h3>AI 기반 업무 자동화</h3>
+        <div class="company">연구 & 개발</div>
+        <p>
+          Claude API를 활용한 지능형 업무 보조 시스템 구축.
+          자연어 기반 재고 조회, 주문 처리, 리포트 자동 생성 기능 개발.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact" class="contact-bg">
+  <div class="section">
+    <span class="section-tag">Contact</span>
+    <h2>연락하기</h2>
+    <p class="subtitle">프로젝트 협업이나 문의 사항이 있으시면 편하게 연락해주세요.</p>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h3>함께 일해요</h3>
+        <p>
+          새로운 프로젝트, 기술 파트너십, 또는 그냥 기술 이야기를 나누고 싶으시다면
+          언제든 환영합니다.
+        </p>
+        <a href="mailto:yg.kim80@gmail.com" class="contact-link">✉ yg.kim80@gmail.com</a>
+        <a href="https://github.com/ygkim80-maker" class="contact-link">→ GitHub</a>
+      </div>
+      <form class="contact-form" onsubmit="event.preventDefault(); alert('감사합니다! 메시지가 전송되었습니다.');">
+        <label for="name">이름</label>
+        <input type="text" id="name" placeholder="홍길동" required />
+        <label for="email">이메일</label>
+        <input type="email" id="email" placeholder="example@email.com" required />
+        <label for="message">메시지</label>
+        <textarea id="message" placeholder="프로젝트에 대해 알려주세요..." required></textarea>
+        <button type="submit" class="btn-primary" style="width:100%;margin-top:8px;">보내기</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>© 2026 김영국. Designed with Stripe-inspired design system.</p>
+</footer>
+
+</body>
+</html>
