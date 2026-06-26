@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>매출 대시보드</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#0f1117;color:#e0e0e0;min-height:100vh}
+.header{padding:24px 32px 12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.header h1{font-size:1.6rem;color:#fff}
+.filters{display:flex;gap:12px;align-items:center}
+.filters select{background:#1a1d2e;color:#e0e0e0;border:1px solid #2a2d3e;border-radius:8px;padding:8px 14px;font-size:.9rem;cursor:pointer}
+.filters select:focus{outline:none;border-color:#6366f1}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:0 32px;margin:16px 0}
+.kpi{background:#1a1d2e;border-radius:12px;padding:20px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px}
+.kpi:nth-child(1)::after{background:#6366f1}
+.kpi:nth-child(2)::after{background:#22c55e}
+.kpi:nth-child(3)::after{background:#f59e0b}
+.kpi:nth-child(4)::after{background:#ec4899}
+.kpi .label{font-size:.8rem;color:#9ca3af;margin-bottom:6px}
+.kpi .value{font-size:1.6rem;font-weight:700;color:#fff}
+.kpi .sub{font-size:.75rem;margin-top:4px}
+.up{color:#22c55e}
+.down{color:#ef4444}
+.charts{display:grid;grid-template-columns:2fr 1fr;gap:16px;padding:0 32px;margin:16px 0}
+.chart-box{background:#1a1d2e;border-radius:12px;padding:20px}
+.chart-box h3{font-size:.95rem;color:#9ca3af;margin-bottom:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 32px;margin:16px 0 24px}
+canvas{max-height:320px}
+.badge-poor{display:inline-block;background:rgba(239,68,68,.15);color:#ef4444;font-size:.7rem;padding:2px 8px;border-radius:10px;margin-left:6px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 매출 대시보드</h1>
+  <div class="filters">
+    <select id="filterCategory"><option value="all">전체 제품군</option></select>
+    <select id="filterYear"><option value="all">전체 연도</option></select>
+  </div>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="label">총 매출</div><div class="value" id="kpiTotal">-</div><div class="sub" id="kpiTotalSub"></div></div>
+  <div class="kpi"><div class="label">전년 대비 성장률</div><div class="value" id="kpiGrowth">-</div><div class="sub" id="kpiGrowthSub"></div></div>
+  <div class="kpi"><div class="label">1위 제품군</div><div class="value" id="kpiTop">-</div><div class="sub" id="kpiTopSub"></div></div>
+  <div class="kpi"><div class="label">부진 제품군</div><div class="value" id="kpiWorst">-</div><div class="sub" id="kpiWorstSub"></div></div>
+</div>
+
+<div class="charts">
+  <div class="chart-box"><h3>월별 매출 추이</h3><canvas id="lineChart"></canvas></div>
+  <div class="chart-box"><h3>제품군 비중</h3><canvas id="donutChart"></canvas></div>
+</div>
+
+<div class="row2">
+  <div class="chart-box"><h3>고객사 매출 순위 (Top 10)</h3><canvas id="barChart"></canvas></div>
+  <div class="chart-box"><h3>제품군별 목표 달성률</h3><canvas id="gaugeChart"></canvas></div>
+</div>
+
+<script>
+const DATA = {
+  categories: ["전자부품","반도체","디스플레이","배터리","소재"],
+  years: [2023, 2024, 2025],
+  customers: ["삼성전자","LG전자","SK하이닉스","현대모비스","LG에너지솔루션","포스코","한화솔루션","두산","롯데케미칼","CJ제일제당"],
+  monthly: {
+    2023:{전자부품:[120,135,128,142,155,148,162,170,158,175,180,195],반도체:[200,210,195,225,240,235,250,260,245,270,280,300],디스플레이:[90,85,88,92,95,89,93,97,91,96,100,105],배터리:[150,160,155,170,185,178,190,200,188,205,215,230],소재:[60,55,58,62,65,61,64,67,63,68,70,75]},
+    2024:{전자부품:[130,145,138,152,165,158,172,180,168,185,190,210],반도체:[220,235,218,250,268,258,275,290,270,298,310,335],디스플레이:[80,78,75,82,85,79,83,87,81,86,88,92],배터리:[170,182,175,195,210,202,218,230,215,238,248,268],소재:[65,60,63,68,72,67,70,74,69,75,78,82]},
+    2025:{전자부품:[145,158,150,168,180,172,188,198,185,202,210,228],반도체:[250,268,248,285,305,292,312,330,308,340,355,382],디스플레이:[72,70,68,74,76,71,75,78,73,77,80,84],배터리:[195,210,200,225,242,232,252,268,248,275,288,312],소재:[70,65,68,73,78,72,76,80,75,82,85,90]}
+  },
+  targets: {전자부품:90,반도체:95,디스플레이:70,배터리:92,소재:80},
+  customerSales: {
+    "삼성전자":4800,"LG전자":3200,"SK하이닉스":2900,"현대모비스":2400,"LG에너지솔루션":2100,
+    "포스코":1800,"한화솔루션":1500,"두산":1200,"롯데케미칼":950,"CJ제일제당":720
+  }
+};
+
+const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+const COLORS = ['#6366f1','#22c55e','#f59e0b','#ec4899','#06b6d4'];
+const POOR_THRESHOLD = 75;
+
+let lineChart, donutChart, barChart, gaugeChart;
+
+function init(){
+  const catSel = document.getElementById('filterCategory');
+  const yrSel = document.getElementById('filterYear');
+  DATA.categories.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;catSel.appendChild(o)});
+  DATA.years.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y+'년';yrSel.appendChild(o)});
+  catSel.addEventListener('change',update);
+  yrSel.addEventListener('change',update);
+  createCharts();
+  update();
+}
+
+function getFilteredYears(){
+  const v=document.getElementById('filterYear').value;
+  return v==='all'?DATA.years:[+v];
+}
+function getFilteredCats(){
+  const v=document.getElementById('filterCategory').value;
+  return v==='all'?DATA.categories:[v];
+}
+
+function sum(arr){return arr.reduce((a,b)=>a+b,0)}
+
+function fmt(n){
+  if(n>=10000) return (n/10000).toFixed(1)+'조';
+  if(n>=1) return n.toLocaleString()+'억';
+  return n+'억';
+}
+
+function update(){
+  const years=getFilteredYears();
+  const cats=getFilteredCats();
+  updateKPI(years,cats);
+  updateLine(years,cats);
+  updateDonut(years,cats);
+  updateBar();
+  updateGauge(years,cats);
+}
+
+function updateKPI(years,cats){
+  let total=0;
+  years.forEach(y=>cats.forEach(c=>total+=sum(DATA.monthly[y][c])));
+  document.getElementById('kpiTotal').textContent=fmt(total);
+
+  const latestY=Math.max(...years);
+  const prevY=latestY-1;
+  if(DATA.monthly[prevY]){
+    let cur=0,prev=0;
+    cats.forEach(c=>{cur+=sum(DATA.monthly[latestY][c]);prev+=sum(DATA.monthly[prevY][c])});
+    const g=((cur-prev)/prev*100).toFixed(1);
+    const el=document.getElementById('kpiGrowth');
+    el.textContent=(g>0?'+':'')+g+'%';
+    el.className='value '+(g>=0?'up':'down');
+    document.getElementById('kpiGrowthSub').textContent=`${prevY}→${latestY}`;
+    document.getElementById('kpiGrowthSub').className='sub '+(g>=0?'up':'down');
+  }
+
+  let catTotals={};
+  DATA.categories.forEach(c=>{catTotals[c]=0;years.forEach(y=>catTotals[c]+=sum(DATA.monthly[y][c]))});
+  const sorted=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('kpiTop').textContent=sorted[0][0];
+  document.getElementById('kpiTopSub').textContent=fmt(sorted[0][1]);
+
+  const worst=sorted[sorted.length-1];
+  document.getElementById('kpiWorst').innerHTML=worst[0]+'<span class="badge-poor">부진</span>';
+  document.getElementById('kpiWorstSub').textContent=fmt(worst[1]);
+  document.getElementById('kpiWorstSub').className='sub down';
+}
+
+function updateLine(years,cats){
+  const datasets=[];
+  cats.forEach((c,i)=>{
+    years.forEach(y=>{
+      datasets.push({
+        label:`${c} (${y})`,
+        data:DATA.monthly[y][c],
+        borderColor:COLORS[DATA.categories.indexOf(c)],
+        backgroundColor:COLORS[DATA.categories.indexOf(c)]+'20',
+        borderWidth:years.length>1&&y<Math.max(...years)?1.5:2.5,
+        borderDash:years.length>1&&y<Math.max(...years)?[5,5]:[],
+        tension:.4,
+        pointRadius:2,
+        fill:cats.length===1&&years.length===1
+      });
+    });
+  });
+  lineChart.data.datasets=datasets;
+  lineChart.update();
+}
+
+function updateDonut(years,cats){
+  const vals=[];const labels=[];const colors=[];
+  DATA.categories.forEach((c,i)=>{
+    let t=0;years.forEach(y=>t+=sum(DATA.monthly[y][c]));
+    vals.push(t);labels.push(c);colors.push(COLORS[i]);
+  });
+  donutChart.data.labels=labels;
+  donutChart.data.datasets[0].data=vals;
+  donutChart.data.datasets[0].backgroundColor=colors;
+
+  const poorIdx=[];
+  DATA.categories.forEach((c,i)=>{if(DATA.targets[c]<POOR_THRESHOLD)poorIdx.push(i)});
+  const borders=colors.map((_,i)=>poorIdx.includes(i)?'#ef4444':'transparent');
+  donutChart.data.datasets[0].borderColor=borders;
+  donutChart.data.datasets[0].borderWidth=poorIdx.length?3:0;
+  donutChart.update();
+}
+
+function updateBar(){
+  const sorted=Object.entries(DATA.customerSales).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  barChart.data.labels=sorted.map(s=>s[0]);
+  barChart.data.datasets[0].data=sorted.map(s=>s[1]);
+  barChart.data.datasets[0].backgroundColor=sorted.map((_,i)=>`rgba(99,102,241,${1-i*0.07})`);
+  barChart.update();
+}
+
+function updateGauge(years,cats){
+  const labels=[];const achieved=[];const bgColors=[];
+  DATA.categories.forEach((c,i)=>{
+    labels.push(c);
+    achieved.push(DATA.targets[c]);
+    bgColors.push(DATA.targets[c]<POOR_THRESHOLD?'#ef4444':COLORS[i]);
+  });
+  gaugeChart.data.labels=labels;
+  gaugeChart.data.datasets[0].data=achieved;
+  gaugeChart.data.datasets[0].backgroundColor=bgColors;
+  gaugeChart.update();
+}
+
+function createCharts(){
+  const dark={color:'#9ca3af'};
+  const grid={color:'#1f2937'};
+
+  lineChart=new Chart(document.getElementById('lineChart'),{
+    type:'line',
+    data:{labels:MONTHS,datasets:[]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:dark}},scales:{x:{ticks:dark,grid},y:{ticks:{...dark,callback:v=>v+'억'},grid}}}
+  });
+  document.getElementById('lineChart').parentElement.style.height='340px';
+
+  donutChart=new Chart(document.getElementById('donutChart'),{
+    type:'doughnut',
+    data:{labels:[],datasets:[{data:[],backgroundColor:[],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{...dark,padding:12}}}}
+  });
+
+  barChart=new Chart(document.getElementById('barChart'),{
+    type:'bar',
+    data:{labels:[],datasets:[{label:'매출(억)',data:[],backgroundColor:[]}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{...dark,callback:v=>v+'억'},grid},y:{ticks:dark,grid:{display:false}}}}
+  });
+
+  gaugeChart=new Chart(document.getElementById('gaugeChart'),{
+    type:'bar',
+    data:{labels:[],datasets:[{label:'달성률(%)',data:[],backgroundColor:[],borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},annotation:{}},scales:{x:{ticks:dark,grid:{display:false}},y:{max:120,ticks:{...dark,callback:v=>v+'%'},grid}}}
+  });
+}
+
+init();
+</script>
+</body>
+</html>
