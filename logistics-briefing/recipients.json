@@ -1,0 +1,8 @@
+{
+  "to": [
+    "yg.kim80@gmail.com",
+    "sperus@zeniel.co.kr"
+  ],
+  "cc": [],
+  "note": "팀 전체 배포로 확대할 때 이 리스트에 이메일만 추가하면 된다. 매일 브리핑 draft 생성 시 이 목록을 to로 자동 지정."
+}
