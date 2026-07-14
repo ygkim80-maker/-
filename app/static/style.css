@@ -213,6 +213,32 @@ button:disabled { opacity: 0.6; cursor: default; }
   margin-top: 16px;
 }
 
+.qr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.qr-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  break-inside: avoid;
+}
+
+.qr-card img {
+  width: 100%;
+  max-width: 160px;
+  height: auto;
+  background: white;
+}
+
+.qr-name { font-weight: 600; margin-top: 8px; }
+.qr-empno { color: var(--muted); font-size: 0.8rem; }
+
 @media print {
   .topbar, button { display: none; }
 }

@@ -28,7 +28,10 @@
 <details class="site-block">
   <summary>
     <span class="site-name">{{ row.site.name }}</span>
-    <span class="site-stat">{{ row.signed }} / {{ row.total }} ({{ row.rate }}%)</span>
+    <span class="site-stat">
+      {{ row.signed }} / {{ row.total }} ({{ row.rate }}%)
+      <a href="/site/{{ row.site.id }}/qr-sheet" target="_blank" onclick="event.stopPropagation()">QR 시트</a>
+    </span>
   </summary>
   <div class="progress-bar">
     <div class="progress-fill" style="width: {{ row.rate }}%;"></div>
@@ -49,6 +52,7 @@
             <a href="/certificate/{{ dr.link_id }}">증빙서</a>
           {% else %}
             <a href="/sign/{{ dr.token }}" target="_blank">서명페이지</a>
+            <a href="/sign/{{ dr.token }}/qr.png" target="_blank">QR</a>
             <button class="remind-btn" data-driver-id="{{ dr.driver.id }}">리마인드</button>
           {% endif %}
         </td>

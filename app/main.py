@@ -2,9 +2,11 @@ import base64
 import binascii
 import os
 from datetime import datetime
+from io import BytesIO
 
+import qrcode
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func
@@ -127,6 +129,34 @@ def sign_page(token: str, request: Request, db: Session = Depends(get_db)):
             "document": link.document,
             "suggested_name": link.driver.name,
         },
+    )
+
+
+@app.get("/sign/{token}/qr.png", include_in_schema=False)
+def sign_qr(token: str, request: Request, db: Session = Depends(get_db)):
+    link = db.query(models.SigningLink).filter(models.SigningLink.token == token).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="유효하지 않은 링크입니다")
+    sign_url = str(request.base_url).rstrip("/") + f"/sign/{token}"
+    img = qrcode.make(sign_url, border=2)
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return StreamingResponse(buf, media_type="image/png")
+
+
+@app.get("/site/{site_id}/qr-sheet", response_class=HTMLResponse)
+def site_qr_sheet(site_id: int, request: Request, db: Session = Depends(get_db)):
+    site = db.get(models.Site, site_id)
+    if not site:
+        raise HTTPException(status_code=404, detail="지사를 찾을 수 없습니다")
+    rows = []
+    for driver in sorted(site.drivers, key=lambda d: d.id):
+        link, signed = _driver_status(db, driver)
+        if link and not signed:
+            rows.append({"driver": driver, "token": link.token})
+    return templates.TemplateResponse(
+        "qr_sheet.html", {"request": request, "site": site, "rows": rows}
     )
 
 
