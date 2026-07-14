@@ -135,7 +135,8 @@ button:disabled { opacity: 0.6; cursor: default; }
   font-size: 0.9rem;
 }
 
-.card-block input[type="text"] {
+.card-block input[type="text"],
+.card-block select {
   display: block;
   width: 100%;
   padding: 10px;
@@ -143,6 +144,7 @@ button:disabled { opacity: 0.6; cursor: default; }
   border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
+  background: white;
 }
 
 .document-box {
@@ -213,31 +215,29 @@ button:disabled { opacity: 0.6; cursor: default; }
   margin-top: 16px;
 }
 
-.qr-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.qr-card {
+.qr-page {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 12px;
+  padding: 32px;
   text-align: center;
-  break-inside: avoid;
+  margin-top: 20px;
 }
 
-.qr-card img {
+.qr-page img {
   width: 100%;
-  max-width: 160px;
+  max-width: 320px;
   height: auto;
   background: white;
 }
 
-.qr-name { font-weight: 600; margin-top: 8px; }
-.qr-empno { color: var(--muted); font-size: 0.8rem; }
+.qr-url {
+  margin-top: 12px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--muted);
+  word-break: break-all;
+}
 
 @media print {
   .topbar, button { display: none; }
