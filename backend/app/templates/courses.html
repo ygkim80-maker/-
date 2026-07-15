@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}강의 목록{% endblock %}
+{% block content %}
+<h1>강의 목록</h1>
+
+<div class="card">
+  <span class="tag {{ 'active' if not active_category else '' }}"><a href="/courses" style="color:inherit;text-decoration:none;">전체</a></span>
+  {% for cat in categories %}
+  <span class="tag"><a href="/courses?category={{ cat }}" style="color:inherit;text-decoration:none;">{{ cat }}</a></span>
+  {% endfor %}
+</div>
+
+<ul class="course-list">
+  {% for course in courses %}
+  <li>
+    <div class="course-title"><a href="/courses/{{ course.id }}" style="color:inherit;text-decoration:none;">{{ course.title }}</a></div>
+    <div class="course-meta">
+      {{ course.category }} · 난이도 {{ course.difficulty }} · {{ course.duration_minutes }}분
+      {% if course.id in enrollment_map %}
+        · <strong>{{ '수료완료' if enrollment_map[course.id].status.value == 'completed' else '수강중 (' ~ enrollment_map[course.id].progress_percent ~ '%)' }}</strong>
+      {% endif %}
+    </div>
+    <div style="margin-top:6px;">
+      {% for tag in course.tag_names %}<span class="tag">{{ tag }}</span>{% endfor %}
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

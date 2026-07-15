@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}AI 추천{% endblock %}
+{% block content %}
+<h1>{{ current_learner.name }}님을 위한 AI 학습 추천</h1>
+<p class="muted">수강 이력의 관심 태그, 동료 학습자 인기도, 난이도 적합성을 결합해 계산한 추천입니다.</p>
+
+{% if not recs %}
+<div class="card"><p class="muted">추천할 강의가 없습니다. 이미 모든 관련 강의를 수강하셨습니다.</p></div>
+{% endif %}
+
+<ul class="course-list">
+  {% for rec in recs %}
+  <li>
+    <div class="course-title">
+      <a href="/courses/{{ rec.course.id }}" style="color:inherit;text-decoration:none;">{{ rec.course.title }}</a>
+      <span class="muted">· 적합도 {{ (rec.score * 100) | round | int }}점</span>
+    </div>
+    <div class="course-meta">{{ rec.course.category }} · 난이도 {{ rec.course.difficulty }} · {{ rec.course.duration_minutes }}분</div>
+    <ul class="reasons">
+      {% for reason in rec.reasons %}<li>{{ reason }}</li>{% endfor %}
+    </ul>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}사내 AI 학습 플랫폼{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <span class="brand">🎓 사내 AI 학습 플랫폼</span>
+    <a href="/courses" class="{{ 'active' if active == 'courses' else '' }}">강의 목록</a>
+    <a href="/recommendations" class="{{ 'active' if active == 'recommend' else '' }}">AI 추천</a>
+    <a href="/tutor" class="{{ 'active' if active == 'tutor' else '' }}">AI 튜터</a>
+    <a href="/dashboard" class="{{ 'active' if active == 'dashboard' else '' }}">학습 분석</a>
+    <span class="persona">
+      {% if current_learner %}
+        {{ current_learner.name }}님 ({{ current_learner.department }}·{{ current_learner.level_label }})
+        · <a href="/learners">전환</a>
+      {% else %}
+        <a href="/learners">학습자 선택</a>
+      {% endif %}
+    </span>
+  </nav>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
