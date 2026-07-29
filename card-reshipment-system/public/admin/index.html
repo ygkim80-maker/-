@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>카드 재배송 자동안내 관리자</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#0f1117;color:#e0e0e0;min-height:100vh}
+.header{padding:24px 32px 12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.header h1{font-size:1.5rem;color:#fff}
+.header .sub{font-size:.8rem;color:#9ca3af;margin-top:4px}
+.btn{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:.85rem;cursor:pointer}
+.btn:hover{background:#4f46e5}
+.btn.secondary{background:#1a1d2e;border:1px solid #2a2d3e}
+.btn.secondary:hover{background:#242840}
+.btn.warn{background:#ef4444}
+.btn.warn:hover{background:#dc2626}
+.btn.small{padding:5px 10px;font-size:.75rem}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;padding:0 32px;margin:16px 0}
+.kpi{background:#1a1d2e;border-radius:12px;padding:18px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;background:#6366f1}
+.kpi:nth-child(2)::after{background:#f59e0b}
+.kpi:nth-child(3)::after{background:#22c55e}
+.kpi:nth-child(4)::after{background:#ec4899}
+.kpi:nth-child(5)::after{background:#ef4444}
+.kpi .label{font-size:.75rem;color:#9ca3af;margin-bottom:6px}
+.kpi .value{font-size:1.5rem;font-weight:700;color:#fff}
+.panel{background:#1a1d2e;border-radius:12px;padding:20px;margin:16px 32px}
+.panel h3{font-size:.95rem;color:#9ca3af;margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+input,select{background:#0f1117;color:#e0e0e0;border:1px solid #2a2d3e;border-radius:8px;padding:9px 12px;font-size:.85rem;width:100%}
+input:focus,select:focus{outline:none;border-color:#6366f1}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th,td{padding:10px 8px;text-align:left;border-bottom:1px solid #23263a;white-space:nowrap}
+th{color:#9ca3af;font-weight:600;font-size:.75rem}
+tr:hover td{background:#1f2337}
+.status{display:inline-block;padding:3px 9px;border-radius:10px;font-size:.72rem;font-weight:600}
+.status-in_transit{background:rgba(148,163,184,.15);color:#94a3b8}
+.status-returned{background:rgba(245,158,11,.15);color:#f59e0b}
+.status-notified{background:rgba(99,102,241,.15);color:#818cf8}
+.status-customer_responded{background:rgba(34,197,94,.15);color:#22c55e}
+.status-rescheduled{background:rgba(6,182,212,.15);color:#22d3ee}
+.status-redelivered{background:rgba(34,197,94,.2);color:#4ade80}
+.status-closed{background:rgba(148,163,184,.1);color:#64748b}
+.filters{display:flex;gap:10px;padding:0 32px;margin-bottom:8px}
+.filters select{width:180px}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.toast{position:fixed;bottom:20px;right:20px;background:#1a1d2e;border:1px solid #2a2d3e;border-radius:8px;padding:12px 18px;font-size:.85rem;max-width:360px;box-shadow:0 4px 20px rgba(0,0,0,.4);display:none;z-index:50}
+.badge-attempts{background:rgba(239,68,68,.15);color:#ef4444;border-radius:8px;padding:1px 6px;font-size:.72rem;margin-left:4px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center;z-index:100}
+.modal{background:#1a1d2e;border-radius:12px;padding:20px;width:520px;max-height:80vh;overflow:auto}
+.modal h3{margin-bottom:12px}
+.log-item{padding:8px 0;border-bottom:1px solid #23263a;font-size:.8rem}
+.log-item .meta{color:#9ca3af;font-size:.72rem;margin-top:2px}
+.close-x{float:right;cursor:pointer;color:#9ca3af}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📮 카드 재배송 자동안내 관리자</h1>
+    <div class="sub">수취인 부재로 반송된 카드에 대해 자동으로 문자/ARS 안내를 발송하고, 고객 재배송 신청을 관리합니다.</div>
+  </div>
+  <button class="btn secondary" onclick="loadAll()">새로고침</button>
+</div>
+
+<div class="kpi-row" id="kpiRow">
+  <div class="kpi"><div class="label">전체 건수</div><div class="value" id="kpiTotal">-</div></div>
+  <div class="kpi"><div class="label">반송 접수</div><div class="value" id="kpiReturned">-</div></div>
+  <div class="kpi"><div class="label">안내 발송됨</div><div class="value" id="kpiNotified">-</div></div>
+  <div class="kpi"><div class="label">고객 응답 완료</div><div class="value" id="kpiResponded">-</div></div>
+  <div class="kpi"><div class="label">담당자 확인 필요</div><div class="value" id="kpiManual">-</div></div>
+</div>
+
+<div class="panel">
+  <h3>반송 건 신규 등록 (지점/본사 입고 접수)</h3>
+  <div class="form-grid">
+    <input id="f_tracking" placeholder="운송장번호">
+    <input id="f_name" placeholder="고객명">
+    <input id="f_phone" placeholder="연락처 (01012345678)">
+    <input id="f_card" placeholder="카드 종류 (예: 체크카드)">
+    <input id="f_branch" placeholder="담당 지점/본사">
+    <input id="f_address" placeholder="기존 배송지 주소">
+  </div>
+  <button class="btn" onclick="createShipment()">등록</button>
+</div>
+
+<div class="filters">
+  <select id="filterStatus" onchange="loadAll()">
+    <option value="">전체 상태</option>
+    <option value="in_transit">배송중(미반송)</option>
+    <option value="returned">반송 접수</option>
+    <option value="notified">안내 발송됨</option>
+    <option value="customer_responded">고객 응답 완료</option>
+    <option value="rescheduled">재배송 예약</option>
+    <option value="redelivered">재배송 완료</option>
+    <option value="closed">종결</option>
+  </select>
+</div>
+
+<div class="panel">
+  <h3>반송 건 목록</h3>
+  <div style="overflow-x:auto">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>운송장번호</th><th>고객명</th><th>연락처</th><th>카드</th><th>지점</th>
+        <th>상태</th><th>시도</th><th>고객 선택</th><th>액션</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <span class="close-x" onclick="closeModal()">✕</span>
+    <h3>발송 이력</h3>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const CHOICE_LABEL = {
+  redeliver_same: '동일주소 재배송',
+  redeliver_new: '새 주소 재배송',
+  pickup_branch: '지점 방문수령',
+  cancel: '재배송 취소',
+};
+const STATUS_LABEL = {
+  in_transit: '배송중', returned: '반송 접수', notified: '안내 발송됨',
+  customer_responded: '고객 응답 완료', rescheduled: '재배송 예약',
+  redelivered: '재배송 완료', closed: '종결',
+};
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.style.display='none',3500);
+}
+
+async function api(path, opts){
+  const res = await fetch('/api/admin'+path, {
+    headers:{'Content-Type':'application/json'},
+    ...opts,
+  });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error||'요청 실패');
+  return data;
+}
+
+async function loadAll(){
+  await Promise.all([loadStats(), loadShipments()]);
+}
+
+async function loadStats(){
+  const s = await api('/stats');
+  document.getElementById('kpiTotal').textContent = s.total;
+  document.getElementById('kpiReturned').textContent = s.byStatus.returned||0;
+  document.getElementById('kpiNotified').textContent = s.byStatus.notified||0;
+  document.getElementById('kpiResponded').textContent = s.byStatus.customer_responded||0;
+  document.getElementById('kpiManual').textContent = s.manualCallNeeded||0;
+}
+
+async function loadShipments(){
+  const status = document.getElementById('filterStatus').value;
+  const qs = status ? ('?status='+encodeURIComponent(status)) : '';
+  const rows = await api('/shipments'+qs);
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = rows.map(r=>`
+    <tr>
+      <td>${r.id}</td>
+      <td>${r.tracking_no}</td>
+      <td>${r.customer_name}</td>
+      <td>${r.phone}</td>
+      <td>${r.card_type}</td>
+      <td>${r.branch}</td>
+      <td><span class="status status-${r.status}">${STATUS_LABEL[r.status]||r.status}</span></td>
+      <td>${r.notify_attempts}${r.notify_attempts>=3?'<span class="badge-attempts">확인필요</span>':''}</td>
+      <td>${r.response_choice ? CHOICE_LABEL[r.response_choice] : '-'}</td>
+      <td class="actions">
+        ${r.status==='in_transit' ? `<button class="btn small" onclick="markReturned(${r.id})">반송등록+안내발송</button>` : ''}
+        ${['returned','notified'].includes(r.status) ? `<button class="btn small secondary" onclick="notify(${r.id})">재발송</button>` : ''}
+        ${r.status==='customer_responded' ? `<button class="btn small" onclick="setStatus(${r.id},'rescheduled')">재배송 예약처리</button>` : ''}
+        ${r.status==='rescheduled' ? `<button class="btn small" onclick="setStatus(${r.id},'redelivered')">배송완료 처리</button>` : ''}
+        <button class="btn small secondary" onclick="showLogs(${r.id})">이력</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="10" style="color:#9ca3af">데이터가 없습니다.</td></tr>';
+}
+
+async function createShipment(){
+  const payload = {
+    tracking_no: document.getElementById('f_tracking').value.trim(),
+    customer_name: document.getElementById('f_name').value.trim(),
+    phone: document.getElementById('f_phone').value.trim(),
+    card_type: document.getElementById('f_card').value.trim(),
+    branch: document.getElementById('f_branch').value.trim(),
+    original_address: document.getElementById('f_address').value.trim(),
+  };
+  if(Object.values(payload).some(v=>!v)){ toast('모든 항목을 입력해 주세요.'); return; }
+  try{
+    await api('/shipments', {method:'POST', body: JSON.stringify(payload)});
+    ['f_tracking','f_name','f_phone','f_card','f_branch','f_address'].forEach(id=>document.getElementById(id).value='');
+    toast('등록되었습니다.');
+    loadAll();
+  }catch(e){ toast(e.message); }
+}
+
+async function markReturned(id){
+  try{
+    const r = await api(`/shipments/${id}/mark-returned`, {method:'POST'});
+    toast(`반송 등록 및 ${r.notify.channel==='voice'?'ARS 발신':'문자 발송'} 완료`);
+    loadAll();
+  }catch(e){ toast(e.message); }
+}
+
+async function notify(id){
+  try{
+    const r = await api(`/shipments/${id}/notify`, {method:'POST'});
+    toast(`${r.notify.channel==='voice'?'ARS 발신':'문자 발송'} 완료 (시도 ${r.notify.attempt}회)`);
+    loadAll();
+  }catch(e){ toast(e.message); }
+}
+
+async function setStatus(id, status){
+  try{
+    await api(`/shipments/${id}/status`, {method:'POST', body: JSON.stringify({status})});
+    toast('상태가 변경되었습니다.');
+    loadAll();
+  }catch(e){ toast(e.message); }
+}
+
+async function showLogs(id){
+  const s = await api(`/shipments/${id}`);
+  const body = document.getElementById('modalBody');
+  body.innerHTML = (s.logs.length ? s.logs.map(l=>`
+    <div class="log-item">
+      <div>[${l.channel.toUpperCase()}/${l.provider}] ${l.status==='sent'?'✅ 발송':'❌ 실패'}</div>
+      <div class="meta">${l.sent_at}${l.error? ' · '+l.error : ''}</div>
+      <div style="margin-top:4px;white-space:pre-wrap;color:#cbd5e1">${l.message}</div>
+    </div>
+  `).join('') : '<div style="color:#9ca3af">발송 이력이 없습니다.</div>');
+  document.getElementById('modalBg').style.display='flex';
+}
+function closeModal(){ document.getElementById('modalBg').style.display='none'; }
+
+loadAll();
+setInterval(loadAll, 15000);
+</script>
+</body>
+</html>

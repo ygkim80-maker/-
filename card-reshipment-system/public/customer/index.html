@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>카드 재배송 신청</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#0f1117;color:#e0e0e0;min-height:100vh;display:flex;justify-content:center;padding:24px 16px}
+.card{background:#1a1d2e;border-radius:16px;padding:28px;width:100%;max-width:420px}
+h1{font-size:1.25rem;color:#fff;margin-bottom:6px}
+.sub{font-size:.85rem;color:#9ca3af;margin-bottom:20px}
+.info{background:#0f1117;border-radius:10px;padding:14px;font-size:.85rem;margin-bottom:20px;line-height:1.7}
+.info b{color:#fff}
+.option{display:block;background:#0f1117;border:1px solid #2a2d3e;border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer}
+.option.selected{border-color:#6366f1;background:#181c30}
+.option input{margin-right:10px}
+textarea,input{width:100%;background:#0f1117;color:#e0e0e0;border:1px solid #2a2d3e;border-radius:8px;padding:10px 12px;font-size:.85rem;margin-top:8px}
+.btn{width:100%;background:#6366f1;color:#fff;border:none;border-radius:10px;padding:13px;font-size:.95rem;margin-top:16px;cursor:pointer}
+.btn:hover{background:#4f46e5}
+.msg{margin-top:16px;font-size:.85rem;text-align:center}
+.hidden{display:none}
+.done{text-align:center;padding:20px 0}
+.done .icon{font-size:2.2rem;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="card" id="app">불러오는 중...</div>
+
+<script>
+const token = location.pathname.split('/').pop();
+const CHOICE_LABEL = {
+  redeliver_same: '기존 주소로 재배송',
+  redeliver_new: '새 주소로 재배송',
+  pickup_branch: '지점 방문 수령',
+  cancel: '재배송 취소',
+};
+
+async function load(){
+  const app = document.getElementById('app');
+  try{
+    const res = await fetch(`/api/customer/${token}`);
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error);
+
+    if(data.status === 'customer_responded' || data.status === 'rescheduled' || data.status === 'redelivered'){
+      app.innerHTML = `
+        <div class="done">
+          <div class="icon">✅</div>
+          <h1>이미 신청이 접수되었습니다</h1>
+          <div class="sub">${data.customer_name}님의 요청: <b>${CHOICE_LABEL[data.response_choice]||''}</b></div>
+        </div>`;
+      return;
+    }
+
+    app.innerHTML = `
+      <h1>📮 카드 재배송 신청</h1>
+      <div class="sub">수취인 부재로 카드가 반송되었습니다. 원하시는 재배송 방법을 선택해 주세요.</div>
+      <div class="info">
+        <div><b>고객명</b> ${data.customer_name}</div>
+        <div><b>카드 종류</b> ${data.card_type}</div>
+        <div><b>담당 지점</b> ${data.branch}</div>
+        <div><b>기존 배송지</b> ${data.original_address}</div>
+      </div>
+      <form id="form">
+        <label class="option"><input type="radio" name="choice" value="redeliver_same" checked> 기존 주소로 재배송</label>
+        <label class="option"><input type="radio" name="choice" value="redeliver_new"> 새 주소로 재배송
+          <input type="text" id="newAddress" placeholder="새 배송지 주소 입력" class="hidden">
+        </label>
+        <label class="option"><input type="radio" name="choice" value="pickup_branch"> 지점 방문 수령 (${data.branch})</label>
+        <label class="option"><input type="radio" name="choice" value="cancel"> 재배송 취소</label>
+        <input type="date" id="preferredDate" title="희망일자(선택)">
+        <button type="submit" class="btn">신청하기</button>
+      </form>
+      <div class="msg" id="msg"></div>
+    `;
+
+    const form = document.getElementById('form');
+    const newAddressInput = document.getElementById('newAddress');
+    form.addEventListener('change', ()=>{
+      const choice = form.choice.value;
+      newAddressInput.classList.toggle('hidden', choice !== 'redeliver_new');
+      document.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+      form.querySelector(`input[value="${choice}"]`).closest('.option').classList.add('selected');
+    });
+    form.querySelector('input[value="redeliver_same"]').closest('.option').classList.add('selected');
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const choice = form.choice.value;
+      const newAddress = newAddressInput.value.trim();
+      const preferredDate = document.getElementById('preferredDate').value;
+      if(choice === 'redeliver_new' && !newAddress){
+        document.getElementById('msg').textContent = '새 배송지 주소를 입력해 주세요.';
+        return;
+      }
+      const res = await fetch(`/api/customer/${token}/respond`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({choice, newAddress, preferredDate}),
+      });
+      const result = await res.json();
+      if(!res.ok){ document.getElementById('msg').textContent = result.error; return; }
+      load();
+    });
+  }catch(err){
+    app.innerHTML = `<div class="done"><div class="icon">⚠️</div><h1>링크를 확인해 주세요</h1><div class="sub">${err.message}</div></div>`;
+  }
+}
+
+load();
+</script>
+</body>
+</html>
