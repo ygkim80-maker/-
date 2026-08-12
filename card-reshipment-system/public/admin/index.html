@@ -48,6 +48,18 @@ tr:hover td{background:#1f2337}
 .actions{display:flex;gap:6px;flex-wrap:wrap}
 .toast{position:fixed;bottom:20px;right:20px;background:#1a1d2e;border:1px solid #2a2d3e;border-radius:8px;padding:12px 18px;font-size:.85rem;max-width:360px;box-shadow:0 4px 20px rgba(0,0,0,.4);display:none;z-index:50}
 .badge-attempts{background:rgba(239,68,68,.15);color:#ef4444;border-radius:8px;padding:1px 6px;font-size:.72rem;margin-left:4px}
+.sync-panel{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+.sync-status{display:flex;align-items:center;gap:10px}
+.dot{width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.2)}
+.dot.mock{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.2)}
+.sync-meta{font-size:.78rem;color:#9ca3af}
+.sync-meta b{color:#e5e7eb}
+.sync-runs{margin-top:14px;font-size:.78rem}
+.sync-run-row{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #23263a;color:#9ca3af}
+.sync-run-row b{color:#e5e7eb}
+.sync-run-row.failed b{color:#ef4444}
+.details{margin-top:14px}
+.details summary{cursor:pointer;color:#9ca3af;font-size:.8rem}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center;z-index:100}
 .modal{background:#1a1d2e;border-radius:12px;padding:20px;width:520px;max-height:80vh;overflow:auto}
 .modal h3{margin-bottom:12px}
@@ -75,16 +87,33 @@ tr:hover td{background:#1f2337}
 </div>
 
 <div class="panel">
-  <h3>반송 건 신규 등록 (지점/본사 입고 접수)</h3>
-  <div class="form-grid">
-    <input id="f_tracking" placeholder="운송장번호">
-    <input id="f_name" placeholder="고객명">
-    <input id="f_phone" placeholder="연락처 (01012345678)">
-    <input id="f_card" placeholder="카드 종류 (예: 체크카드)">
-    <input id="f_branch" placeholder="담당 지점/본사">
-    <input id="f_address" placeholder="기존 배송지 주소">
+  <h3>기간계 연동 상태</h3>
+  <div class="sync-panel">
+    <div class="sync-status">
+      <span class="dot" id="syncDot"></span>
+      <div class="sync-meta">
+        어댑터 <b id="syncAdapter">-</b> · 마지막 동기화 <b id="syncLastAt">-</b> · 마지막 실행결과
+        <b id="syncLastResult">-</b>
+      </div>
+    </div>
+    <button class="btn secondary" onclick="runSyncNow()">지금 동기화</button>
   </div>
-  <button class="btn" onclick="createShipment()">등록</button>
+  <div class="sync-runs" id="syncRuns"></div>
+</div>
+
+<div class="panel">
+  <details class="details">
+    <summary>수동 등록 (예외 처리용 — 기간계 미연동 구간/고객 직접 문의 시에만 사용)</summary>
+    <div class="form-grid" style="margin-top:12px">
+      <input id="f_tracking" placeholder="운송장번호">
+      <input id="f_name" placeholder="고객명">
+      <input id="f_phone" placeholder="연락처 (01012345678)">
+      <input id="f_card" placeholder="카드 종류 (예: 체크카드)">
+      <input id="f_branch" placeholder="담당 지점/본사">
+      <input id="f_address" placeholder="기존 배송지 주소">
+    </div>
+    <button class="btn" onclick="createShipment()">수동 등록</button>
+  </details>
 </div>
 
 <div class="filters">
@@ -156,7 +185,48 @@ async function api(path, opts){
 }
 
 async function loadAll(){
-  await Promise.all([loadStats(), loadShipments()]);
+  await Promise.all([loadStats(), loadShipments(), loadSyncStatus()]);
+}
+
+function timeAgo(iso){
+  if(!iso) return '-';
+  const normalized = /[TZ]/.test(iso) ? iso : iso.replace(' ','T')+'Z';
+  const diffMs = Date.now() - new Date(normalized).getTime();
+  const mins = Math.floor(diffMs/60000);
+  if(mins < 1) return '방금 전';
+  if(mins < 60) return `${mins}분 전`;
+  const hrs = Math.floor(mins/60);
+  if(hrs < 24) return `${hrs}시간 전`;
+  return `${Math.floor(hrs/24)}일 전`;
+}
+
+async function loadSyncStatus(){
+  const s = await api('/sync/status');
+  document.getElementById('syncAdapter').textContent = s.adapter==='rest' ? '기간계 REST API' : 'Mock (연동 전 데모)';
+  document.getElementById('syncDot').className = 'dot' + (s.adapter==='rest' ? '' : ' mock');
+  document.getElementById('syncLastAt').textContent = timeAgo(s.lastSyncedAt);
+  document.getElementById('syncLastResult').textContent = s.lastRun
+    ? `${s.lastRun.status==='success'?'성공':'실패'} (조회 ${s.lastRun.fetched_count}건 / 신규 ${s.lastRun.created_count}건 / 중복 ${s.lastRun.skipped_count}건)`
+    : '아직 실행 이력 없음';
+
+  const runs = await api('/sync/runs');
+  const box = document.getElementById('syncRuns');
+  box.innerHTML = runs.slice(0,6).map(r=>`
+    <div class="sync-run-row ${r.status}">
+      <span>${r.started_at}</span>
+      <span>${r.trigger==='schedule'?'자동':'수동'}</span>
+      <b>${r.status==='success' ? `신규 ${r.created_count}건` : (r.status==='failed' ? '실패' : '진행중')}</b>
+      <span>${r.error||''}</span>
+    </div>
+  `).join('') || '<div style="color:#9ca3af">동기화 이력이 없습니다.</div>';
+}
+
+async function runSyncNow(){
+  try{
+    const r = await api('/sync/run', {method:'POST'});
+    toast(r.ok ? `동기화 완료: 신규 ${r.created}건 (조회 ${r.fetched}건)` : `동기화 실패: ${r.error}`);
+    loadAll();
+  }catch(e){ toast(e.message); }
 }
 
 async function loadStats(){

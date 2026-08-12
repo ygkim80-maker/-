@@ -43,6 +43,36 @@ function createShipment(data) {
   return getShipment(info.lastInsertRowid);
 }
 
+function findByTrackingNo(trackingNo) {
+  return db.prepare('SELECT * FROM shipments WHERE tracking_no = ?').get(trackingNo);
+}
+
+// 기간계가 이미 "반송 확정"으로 내려준 건을 그대로 접수한다 — 담당자의 수기 "반송등록"
+// 단계 없이 바로 returned 상태로 생성하고, 뒤이어 자동 안내 발송까지 트리거된다.
+function importReturnedShipment(record) {
+  if (findByTrackingNo(record.trackingNo)) return null; // 이미 동기화된 건 (중복 방지)
+  const token = nanoid(12);
+  const stmt = db.prepare(`
+    INSERT INTO shipments
+      (tracking_no, customer_name, phone, card_type, branch, original_address, status,
+       return_reason, returned_at, response_token)
+    VALUES (@tracking_no, @customer_name, @phone, @card_type, @branch, @original_address, 'returned',
+       @return_reason, @returned_at, @response_token)
+  `);
+  const info = stmt.run({
+    tracking_no: record.trackingNo,
+    customer_name: record.customerName,
+    phone: record.phone,
+    card_type: record.cardType,
+    branch: record.branch,
+    original_address: record.address,
+    return_reason: record.returnReason || '수취인부재',
+    returned_at: record.returnedAt || new Date().toISOString(),
+    response_token: token,
+  });
+  return getShipment(info.lastInsertRowid);
+}
+
 // 지점/본사 담당자가 반송된 실물을 확인하고 "반송 등록"하는 시점 = 자동화 트리거 지점
 function markReturned(id) {
   const shipment = getShipment(id);
@@ -170,6 +200,8 @@ function getStats() {
 
 module.exports = {
   createShipment,
+  findByTrackingNo,
+  importReturnedShipment,
   markReturned,
   notifyShipment,
   recordCustomerResponse,

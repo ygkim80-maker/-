@@ -1,7 +1,26 @@
 const express = require('express');
 const svc = require('../services/reshipmentService');
+const coreSync = require('../services/coreSyncService');
 
 const router = express.Router();
+
+router.get('/sync/status', (req, res) => {
+  res.json(coreSync.getStatus());
+});
+
+router.get('/sync/runs', (req, res) => {
+  res.json(coreSync.recentRuns(20));
+});
+
+// 정기 폴링 외에 담당자가 즉시 동기화하고 싶을 때 (예: 장애 복구 직후)
+router.post('/sync/run', async (req, res) => {
+  try {
+    const result = await coreSync.runSync('manual');
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 router.get('/shipments', (req, res) => {
   const { status, branch } = req.query;
@@ -14,14 +33,22 @@ router.get('/shipments/:id', (req, res) => {
   res.json({ ...shipment, logs: svc.getLogs(shipment.id) });
 });
 
-// 지점/본사에서 반송 실물을 접수 등록 (실제로는 창고 스캔/입고 시스템과 연동 가능)
+// 예외 상황(기간계 미연동 구간, 고객 직접 문의 등)을 위한 수동 등록 — 기본 경로는
+// 아래 /sync/* 를 통한 기간계 자동 연동이다.
 router.post('/shipments', (req, res) => {
   const { tracking_no, customer_name, phone, card_type, branch, original_address } = req.body;
   if (!tracking_no || !customer_name || !phone || !card_type || !branch || !original_address) {
     return res.status(400).json({ error: '필수 항목이 누락되었습니다.' });
   }
-  const shipment = svc.createShipment({ tracking_no, customer_name, phone, card_type, branch, original_address });
-  res.status(201).json(shipment);
+  try {
+    const shipment = svc.createShipment({ tracking_no, customer_name, phone, card_type, branch, original_address });
+    res.status(201).json(shipment);
+  } catch (err) {
+    if (String(err.message).includes('UNIQUE constraint failed')) {
+      return res.status(409).json({ error: '이미 등록된 운송장번호입니다.' });
+    }
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // 반송 등록 + 자동 1차 안내 발송 트리거 (기존 수기 프로세스를 대체하는 핵심 동작)

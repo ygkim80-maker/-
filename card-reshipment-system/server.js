@@ -5,6 +5,7 @@ const express = require('express');
 const adminRoutes = require('./src/routes/admin');
 const customerRoutes = require('./src/routes/customer');
 const scheduler = require('./src/services/scheduler');
+const coreSyncScheduler = require('./src/services/coreSyncScheduler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,4 +26,5 @@ app.get('/', (req, res) => res.redirect('/admin'));
 app.listen(PORT, () => {
   console.log(`카드 재배송 자동안내 시스템 실행 중: http://localhost:${PORT}/admin`);
   scheduler.start();
+  coreSyncScheduler.start();
 });
